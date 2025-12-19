@@ -25,4 +25,16 @@ public class TicketController {
         TicketDto updatedTicket = ticketService.assignAgentToTicket(id, agentId);
         return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
     }
+
+    @PutMapping("/{id}/resolve")
+    public ResponseEntity<TicketDto> resolveTicket(@PathVariable Long id) {
+        TicketDto updatedTicket = ticketService.resolveTicket(id);
+        return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}/close")
+    public ResponseEntity<TicketDto> closeTicket(@PathVariable Long id) {
+        TicketDto updatedTicket = ticketService.closeTicket(id);
+        return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
+    }
 }

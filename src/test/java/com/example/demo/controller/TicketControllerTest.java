@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.TicketDto;
 import com.example.demo.exception.AgentNotFoundException;
 import com.example.demo.exception.InvalidTicketStateException;
+import com.example.demo.exception.MissingResolutionSummaryException;
 import com.example.demo.exception.TicketNotFoundException;
 import com.example.demo.model.Status;
 import com.example.demo.service.TicketService;
@@ -105,5 +106,61 @@ public class TicketControllerTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(Constants.TICKET_NOT_FOUND));
+    }
+
+    @Test
+    public void givenTicketInProgress_whenResolving_thenStatusIsInResolved() throws Exception {
+        Long ticketId = 1L;
+        String agentName = "Agent001";
+        String ticketDescription = "Description";
+        TicketDto ticketDto = new TicketDto(ticketId, ticketDescription, Status.RESOLVED, null, null, agentName, null);
+
+        when(ticketService.resolveTicket(ticketId)).thenReturn(ticketDto);
+
+        mockMvc.perform(put("/tickets/{id}/resolve", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is(Status.RESOLVED.name())));
+    }
+
+    @Test
+    public void givenResolvedTicketWithSummary_whenClosing_thenStatusIsClosed() throws Exception {
+        Long ticketId = 1L;
+        String agentName = "Agent001";
+        String ticketDescription = "Description";
+        TicketDto ticketDto = new TicketDto(ticketId, ticketDescription, Status.CLOSED, null, null, agentName, "Issue resolved");
+
+        when(ticketService.closeTicket(ticketId)).thenReturn(ticketDto);
+
+        mockMvc.perform(put("/tickets/{id}/close", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is(Status.CLOSED.name())));
+    }
+
+    @Test
+    public void givenResolvedTicketWithoutSummary_whenClosing_thenThrowException() throws Exception {
+        Long ticketId = 1L;
+
+        when(ticketService.closeTicket(ticketId))
+                .thenThrow(new MissingResolutionSummaryException(Constants.RESOLUTION_SUMMARY_REQUIRED));
+
+        mockMvc.perform(put("/tickets/{id}/close", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(Constants.RESOLUTION_SUMMARY_REQUIRED));
+    }
+
+    @Test
+    public void givenClosedTicketWithoutSummary_whenResolving_thenThrowException() throws Exception {
+        Long ticketId = 1L;
+
+        when(ticketService.resolveTicket(ticketId))
+                .thenThrow(new InvalidTicketStateException(Constants.ONLY_TICKET_IN_PROGRESS_CAN_BE_RESOLVED));
+
+        mockMvc.perform(put("/tickets/{id}/resolve", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(Constants.ONLY_TICKET_IN_PROGRESS_CAN_BE_RESOLVED));
     }
 }

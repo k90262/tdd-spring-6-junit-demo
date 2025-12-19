@@ -6,4 +6,8 @@ public interface TicketService {
     TicketDto createTicket(TicketDto ticketDto);
 
     TicketDto assignAgentToTicket(Long ticketId, Long agentId);
+
+    TicketDto resolveTicket(Long ticketId);
+
+    TicketDto closeTicket(Long ticketId);
 }

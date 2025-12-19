@@ -2,6 +2,7 @@ package com.example.demo.controller.exception;
 
 import com.example.demo.exception.AgentNotFoundException;
 import com.example.demo.exception.InvalidTicketStateException;
+import com.example.demo.exception.MissingResolutionSummaryException;
 import com.example.demo.exception.TicketNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,5 +24,10 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(TicketNotFoundException.class)
     public ResponseEntity<String> handleTicketNotFoundException(TicketNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MissingResolutionSummaryException.class)
+    public ResponseEntity<String> handleMissingResolutionSummaryException(MissingResolutionSummaryException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
