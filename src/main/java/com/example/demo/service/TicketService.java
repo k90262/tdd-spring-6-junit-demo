@@ -10,4 +10,6 @@ public interface TicketService {
     TicketDto resolveTicket(Long ticketId);
 
     TicketDto closeTicket(Long ticketId);
+
+    TicketDto updateTicket(Long ticketId, TicketDto ticketDto);
 }

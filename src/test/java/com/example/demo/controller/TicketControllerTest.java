@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -36,7 +37,7 @@ public class TicketControllerTest {
     private TicketService ticketService;
 
     @Test
-    public void givenTicketDetails_whenTicketIsCreted_thenTicketIsSaved() throws Exception {
+    public void givenTicketDetails_whenTicketIsCreated_thenTicketIsSaved() throws Exception {
         String ticketDescription = "Sample ticket description";
         TicketDto ticketDto = new TicketDto(null, ticketDescription, Status.NEW, null, null, null, null);
 
@@ -163,4 +164,37 @@ public class TicketControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(Constants.ONLY_TICKET_IN_PROGRESS_CAN_BE_RESOLVED));
     }
+
+    @Test
+    public void givenTicketDetails_whenTicketIsUpdated_thenDetailsAreUpdated() throws Exception {
+        Long ticketId = 1L;
+        String ticketDescription = "Sample ticket description";
+        TicketDto ticketDto = new TicketDto(ticketId, ticketDescription, Status.NEW, null, null, null, null);
+
+        when(ticketService.updateTicket(eq(ticketId), any(TicketDto.class)))
+                .thenReturn(ticketDto);
+
+        mockMvc.perform(put("/tickets/{id}", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ticketDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description", is(ticketDescription)));
+    }
+
+    @Test
+    public void givenClosedTicket_whenUpdating_thenThrowException() throws Exception {
+        Long ticketId = 1L;
+        String ticketDescription = "Updated ticket description";
+        TicketDto ticketDto = new TicketDto(ticketId, ticketDescription, Status.CLOSED, null, null, null, null);
+
+        when(ticketService.updateTicket(eq(ticketId), any(TicketDto.class)))
+                .thenThrow(new InvalidTicketStateException(Constants.CLOSED_TICKETS_CANNOT_BE_UPDATED));
+
+        mockMvc.perform(put("/tickets/{id}", ticketId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(ticketDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(Constants.CLOSED_TICKETS_CANNOT_BE_UPDATED));
+    }
+
 }

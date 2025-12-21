@@ -37,4 +37,10 @@ public class TicketController {
         TicketDto updatedTicket = ticketService.closeTicket(id);
         return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TicketDto> updateTicket(@PathVariable Long id, @RequestBody TicketDto updatedTicketDetails) {
+        TicketDto updatedTicket = ticketService.updateTicket(id, updatedTicketDetails);
+        return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
+    }
 }
