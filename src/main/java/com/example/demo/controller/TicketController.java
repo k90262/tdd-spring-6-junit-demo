@@ -1,11 +1,14 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.TicketDto;
+import com.example.demo.dto.TicketFilterDto;
 import com.example.demo.service.TicketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/tickets")
@@ -42,5 +45,17 @@ public class TicketController {
     public ResponseEntity<TicketDto> updateTicket(@PathVariable Long id, @RequestBody TicketDto updatedTicketDetails) {
         TicketDto updatedTicket = ticketService.updateTicket(id, updatedTicketDetails);
         return new ResponseEntity<>(updatedTicket, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketDto> getTicket(@PathVariable Long id) {
+        TicketDto ticketDto = ticketService.getTicketById(id);
+        return ResponseEntity.ok(ticketDto);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TicketDto>> getTickets(TicketFilterDto ticketFilterDto) {
+        List<TicketDto> tickets = ticketService.getTickets(ticketFilterDto);
+        return ResponseEntity.ok(tickets);
     }
 }
