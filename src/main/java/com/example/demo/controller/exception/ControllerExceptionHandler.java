@@ -1,9 +1,6 @@
 package com.example.demo.controller.exception;
 
-import com.example.demo.exception.AgentNotFoundException;
-import com.example.demo.exception.InvalidTicketStateException;
-import com.example.demo.exception.MissingResolutionSummaryException;
-import com.example.demo.exception.TicketNotFoundException;
+import com.example.demo.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,6 +25,16 @@ public class ControllerExceptionHandler {
 
     @ExceptionHandler(MissingResolutionSummaryException.class)
     public ResponseEntity<String> handleMissingResolutionSummaryException(MissingResolutionSummaryException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidDateRangeException.class)
+    public ResponseEntity<String> handleInvalidDateRangeException(InvalidDateRangeException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MissingDescriptionException.class)
+    public ResponseEntity<String> handleMissingDescriptionException(MissingDescriptionException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 }
