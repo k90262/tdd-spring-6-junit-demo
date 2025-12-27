@@ -17,6 +17,8 @@ public class Ticket {
 
     private String resolutionSummary;
 
+    private Agent assignedAgent;
+
     public Ticket() {}
 
     public Ticket(Long id, String description, Status status, LocalDateTime createdDate) {
@@ -74,6 +76,14 @@ public class Ticket {
         this.resolutionSummary = resolutionSummary;
     }
 
+    public Agent getAssignedAgent() {
+        return assignedAgent;
+    }
+
+    public void setAssignedAgent(Agent assignedAgent) {
+        this.assignedAgent = assignedAgent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,11 +94,12 @@ public class Ticket {
                 && status == ticket.status
                 && Objects.equals(createdDate, ticket.createdDate)
                 && Objects.equals(closedDate, ticket.closedDate)
-                && Objects.equals(resolutionSummary, ticket.resolutionSummary);
+                && Objects.equals(resolutionSummary, ticket.resolutionSummary)
+                && Objects.equals(assignedAgent, ticket.assignedAgent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, description, status, createdDate, closedDate, resolutionSummary);
+        return Objects.hash(id, description, status, createdDate, closedDate, resolutionSummary, assignedAgent);
     }
 }
