@@ -64,7 +64,17 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto resolveTicket(Long ticketId) {
-        return null;
+        Ticket existingTicket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+
+        if (existingTicket.getStatus() != Status.IN_PROGRESS) {
+            throw new InvalidTicketStateException(ErrorMessages.ONLY_TICKET_IN_PROGRESS_CAN_BE_RESOLVED);
+        }
+
+        existingTicket.setStatus(Status.RESOLVED);
+        Ticket updatedTicket = ticketRepository.save(existingTicket);
+
+        return convertToDto(updatedTicket);
     }
 
     @Override
