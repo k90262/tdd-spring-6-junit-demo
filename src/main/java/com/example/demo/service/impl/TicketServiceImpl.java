@@ -2,10 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.TicketDto;
 import com.example.demo.dto.TicketFilterDto;
-import com.example.demo.exception.AgentNotFoundException;
-import com.example.demo.exception.InvalidTicketStateException;
-import com.example.demo.exception.MissingDescriptionException;
-import com.example.demo.exception.TicketNotFoundException;
+import com.example.demo.exception.*;
 import com.example.demo.model.Agent;
 import com.example.demo.model.Status;
 import com.example.demo.model.Ticket;
@@ -15,6 +12,7 @@ import com.example.demo.service.TicketService;
 import com.example.demo.util.ErrorMessages;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class TicketServiceImpl implements TicketService {
@@ -79,7 +77,27 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto closeTicket(Long ticketId) {
-        return null;
+        Ticket existingTicket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+
+        validateTicketBeforeClosing(existingTicket);
+
+        existingTicket.setStatus(Status.CLOSED);
+        existingTicket.setClosedDate(LocalDateTime.now());
+        Ticket updatedTicket = ticketRepository.save(existingTicket);
+
+        return convertToDto(updatedTicket);
+    }
+
+    private static void validateTicketBeforeClosing(Ticket existingTicket) {
+        if (existingTicket.getResolutionSummary() == null
+                || existingTicket.getResolutionSummary().isEmpty()) {
+            throw new MissingResolutionSummaryException(ErrorMessages.RESOLUTION_SUMMARY_REQUIRED);
+        }
+
+        if (existingTicket.getStatus() != Status.RESOLVED) {
+            throw new InvalidTicketStateException(ErrorMessages.CLOSED_TICKETS_CANNOT_BE_UPDATED);
+        }
     }
 
     @Override
