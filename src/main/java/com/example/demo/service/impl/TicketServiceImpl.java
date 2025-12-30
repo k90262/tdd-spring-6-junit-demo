@@ -102,7 +102,18 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto updateTicket(Long ticketId, TicketDto ticketDto) {
-        return null;
+        Ticket existingTicket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+
+        if (existingTicket.getStatus() == Status.CLOSED) {
+            throw new InvalidTicketStateException(ErrorMessages.CLOSED_TICKETS_CANNOT_BE_UPDATED);
+        }
+
+        existingTicket.setDescription(ticketDto.description());
+        existingTicket.setResolutionSummary(ticketDto.resolutionSummary());
+        Ticket updatedTicket = ticketRepository.save(existingTicket);
+
+        return convertToDto(updatedTicket);
     }
 
     @Override
