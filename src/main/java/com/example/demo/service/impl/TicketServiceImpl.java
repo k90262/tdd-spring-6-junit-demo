@@ -42,8 +42,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto assignAgentToTicket(Long ticketId, Long agentId) {
-        Ticket existingTicket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        Ticket existingTicket = getTicket(ticketId);
 
         if (existingTicket.getStatus() != Status.NEW) {
             throw new InvalidTicketStateException(ErrorMessages.ONLY_NEW_TICKET_CAN_BE_ASSIGNED_TO_AN_AGENT);
@@ -62,8 +61,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto resolveTicket(Long ticketId) {
-        Ticket existingTicket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        Ticket existingTicket = getTicket(ticketId);
 
         if (existingTicket.getStatus() != Status.IN_PROGRESS) {
             throw new InvalidTicketStateException(ErrorMessages.ONLY_TICKET_IN_PROGRESS_CAN_BE_RESOLVED);
@@ -77,8 +75,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto closeTicket(Long ticketId) {
-        Ticket existingTicket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        Ticket existingTicket = getTicket(ticketId);
 
         validateTicketBeforeClosing(existingTicket);
 
@@ -89,21 +86,9 @@ public class TicketServiceImpl implements TicketService {
         return convertToDto(updatedTicket);
     }
 
-    private static void validateTicketBeforeClosing(Ticket existingTicket) {
-        if (existingTicket.getResolutionSummary() == null
-                || existingTicket.getResolutionSummary().isEmpty()) {
-            throw new MissingResolutionSummaryException(ErrorMessages.RESOLUTION_SUMMARY_REQUIRED);
-        }
-
-        if (existingTicket.getStatus() != Status.RESOLVED) {
-            throw new InvalidTicketStateException(ErrorMessages.CLOSED_TICKETS_CANNOT_BE_UPDATED);
-        }
-    }
-
     @Override
     public TicketDto updateTicket(Long ticketId, TicketDto ticketDto) {
-        Ticket existingTicket = ticketRepository.findById(ticketId)
-                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        Ticket existingTicket = getTicket(ticketId);
 
         if (existingTicket.getStatus() == Status.CLOSED) {
             throw new InvalidTicketStateException(ErrorMessages.CLOSED_TICKETS_CANNOT_BE_UPDATED);
@@ -118,12 +103,31 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     public TicketDto getTicketById(Long ticketId) {
-        return null;
+        Ticket existingTicket = getTicket(ticketId);
+
+        return convertToDto(existingTicket);
     }
 
     @Override
     public List<TicketDto> getTickets(TicketFilterDto ticketFilterDto) {
         return List.of();
+    }
+
+    private Ticket getTicket(Long ticketId) {
+        Ticket existingTicket = ticketRepository.findById(ticketId)
+                .orElseThrow(() -> new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
+        return existingTicket;
+    }
+
+    private static void validateTicketBeforeClosing(Ticket existingTicket) {
+        if (existingTicket.getResolutionSummary() == null
+                || existingTicket.getResolutionSummary().isEmpty()) {
+            throw new MissingResolutionSummaryException(ErrorMessages.RESOLUTION_SUMMARY_REQUIRED);
+        }
+
+        if (existingTicket.getStatus() != Status.RESOLVED) {
+            throw new InvalidTicketStateException(ErrorMessages.CLOSED_TICKETS_CANNOT_BE_UPDATED);
+        }
     }
 
     private TicketDto convertToDto(Ticket ticket) {

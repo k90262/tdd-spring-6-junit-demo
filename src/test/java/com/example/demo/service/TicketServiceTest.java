@@ -263,4 +263,27 @@ public class TicketServiceTest {
         assertThrows(InvalidTicketStateException.class,
                 () -> ticketService.updateTicket(ticketId, ticketDto));
     }
+
+    @Test
+    void givenValidTicketId_whenGettingTicket_thenReturnTicketDetails() {
+        Long ticketId = 1L;
+        Ticket ticket = new Ticket(ticketId, "description", Status.NEW, LocalDateTime.now());
+
+        when(ticketRepository.findById(ticketId)).thenReturn(Optional.of(ticket));
+
+        TicketDto ticketDto = ticketService.getTicketById(ticketId);
+
+        assertEquals(ticketId, ticketDto.id());
+    }
+
+    @Test
+    void givenNonexistentTicket_whenGettingTicket_thenThrowException() {
+        Long nonexistentTicketId = 999L;
+
+        when(ticketRepository.findById(nonexistentTicketId)).thenReturn(Optional.empty());
+
+        assertThrows(TicketNotFoundException.class,
+                () -> ticketService.getTicketById(nonexistentTicketId)
+        );
+    }
 }
