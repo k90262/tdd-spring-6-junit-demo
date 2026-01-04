@@ -1,14 +1,20 @@
 package com.example.demo.model;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
 public class Ticket {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     private LocalDateTime createdDate;
@@ -17,6 +23,8 @@ public class Ticket {
 
     private String resolutionSummary;
 
+    @ManyToOne
+    @JoinColumn(name = "assignedAgentId")
     private Agent assignedAgent;
 
     public Ticket() {}
