@@ -33,6 +33,9 @@ public class TicketFilterRepositoryImpl implements TicketFilterRepository {
         if (statuses != null && !statuses.isEmpty()) {
             predicates.add(ticketRoot.get("status").in(statuses));
         }
+        if (startDate != null && endDate != null) {
+            predicates.add(cb.between(ticketRoot.get("createdDate"), startDate, endDate));
+        }
 
         query.where(predicates.toArray(new Predicate[0]));
 
