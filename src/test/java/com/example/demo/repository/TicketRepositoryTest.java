@@ -47,4 +47,50 @@ public class TicketRepositoryTest {
 
         assertEquals(3, inProgressTickets.size());
     }
+
+    @Test
+    void givenStartDate_whenGettingTickets_thenTicketsAfterStartDateAreReturned() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Ticket> ticketsCreatedAfterLastThreeDays = ticketRepository.findWithFilters(
+                null,
+                now.minusDays(3),
+                null,
+                null
+        );
+
+        assertEquals(3, ticketsCreatedAfterLastThreeDays.size());
+    }
+
+    @Test
+    void givenEndDate_whenGettingTickets_thenTicketsBeforeEndDateAreReturned() {
+        LocalDateTime now = LocalDateTime.now();
+
+        List<Ticket> ticketsCreatedBeforeLastThreeDays = ticketRepository.findWithFilters(
+                null,
+                null,
+                now.minusDays(3),
+                null
+        );
+
+        assertEquals(2, ticketsCreatedBeforeLastThreeDays.size());
+    }
+
+    @Test
+    void givenAgent_whenGettingTickets_thenTicketsMatchingAgentAreReturned() {
+        String agentName = "Agent002";
+
+        List<Ticket> ticketsWithAgentAssigned = ticketRepository.findWithFilters(
+                null,
+                null,
+                null,
+                agentName
+        );
+
+        assertEquals(2, ticketsWithAgentAssigned.size());
+        for (Ticket ticket : ticketsWithAgentAssigned) {
+            assertNotNull(ticket.getAssignedAgent());
+            assertEquals(agentName, ticket.getAssignedAgent().getName());
+        }
+    }
 }

@@ -1,14 +1,12 @@
 package com.example.demo.repository.impl;
 
+import com.example.demo.model.Agent;
 import com.example.demo.model.Status;
 import com.example.demo.model.Ticket;
 import com.example.demo.repository.TicketFilterRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -33,8 +31,18 @@ public class TicketFilterRepositoryImpl implements TicketFilterRepository {
         if (statuses != null && !statuses.isEmpty()) {
             predicates.add(ticketRoot.get("status").in(statuses));
         }
+
         if (startDate != null && endDate != null) {
             predicates.add(cb.between(ticketRoot.get("createdDate"), startDate, endDate));
+        } else if (startDate != null) {
+            predicates.add(cb.greaterThanOrEqualTo(ticketRoot.get("createdDate"), startDate));
+        } else if (endDate != null) {
+            predicates.add(cb.lessThanOrEqualTo(ticketRoot.get("createdDate"), endDate));
+        }
+
+        Join<Ticket, Agent> agentJoin = ticketRoot.join("assignedAgent", JoinType.LEFT);
+        if (assignedAgent != null && !assignedAgent.trim().isEmpty()) {
+            predicates.add(cb.equal(agentJoin.get("name"), assignedAgent));
         }
 
         query.where(predicates.toArray(new Predicate[0]));
