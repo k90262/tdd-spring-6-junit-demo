@@ -11,11 +11,13 @@ import com.example.demo.repository.TicketRepository;
 import com.example.demo.service.TicketService;
 import com.example.demo.util.ErrorMessages;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Service
 public class TicketServiceImpl implements TicketService {
     private final TicketRepository ticketRepository;
     private final AgentRepository agentRepository;
@@ -33,8 +35,8 @@ public class TicketServiceImpl implements TicketService {
 
         Ticket newTicket = new Ticket();
         newTicket.setDescription(ticketDto.description());
-        newTicket.setStatus(ticketDto.status());
-        newTicket.setCreatedDate(ticketDto.createdDate());
+        newTicket.setStatus(Status.NEW);
+        newTicket.setCreatedDate(LocalDateTime.now());
 
         Ticket savedTicket = ticketRepository.save(newTicket);
 
