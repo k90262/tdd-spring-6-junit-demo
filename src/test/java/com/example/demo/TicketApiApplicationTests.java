@@ -57,4 +57,35 @@ class TicketApiApplicationTests {
 				});
 	}
 
+	@Test
+	void createTicket_MissingDescription() {
+		TicketDto ticketDto = new TicketDto(null, null, null, null, null, null, null);
+
+		webTestClient.post().uri("/tickets")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(ticketDto)
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
+
+	@Test
+	void assignAgentToTicket_Sucesssful() {
+		// Given a ticket in "NEW" state
+		webTestClient.put().uri("/tickets/100/agent/1")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(TicketDto.class)
+				.value(ticketDtoResponse -> {
+					assertEquals(Status.IN_PROGRESS, ticketDtoResponse.status());
+					assertEquals("Agent001", ticketDtoResponse.assignedAgent());
+				});
+	}
+
+	@Test
+	void assignAgentToTicket_AlreadyInProgress() {
+		// Given a ticket in "NEW" state
+		webTestClient.put().uri("/tickets/101/agent/1")
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
 }

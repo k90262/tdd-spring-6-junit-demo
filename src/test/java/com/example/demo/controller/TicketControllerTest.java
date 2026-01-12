@@ -67,7 +67,7 @@ public class TicketControllerTest {
 
         when(ticketService.assignAgentToTicket(ticketId, agentId)).thenReturn(ticketDto);
 
-        mockMvc.perform(put("/tickets/{id}/assign/{agentId}", ticketId, agentId)
+        mockMvc.perform(put("/tickets/{id}/agent/{agentId}", ticketId, agentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is(Status.IN_PROGRESS.name())))
@@ -82,7 +82,7 @@ public class TicketControllerTest {
 
         when(ticketService.assignAgentToTicket(ticketId, agentId)).thenThrow(new InvalidTicketStateException(ErrorMessages.ONLY_NEW_TICKET_CAN_BE_ASSIGNED_TO_AN_AGENT));
 
-        mockMvc.perform(put("/tickets/{id}/assign/{agentId}", ticketId, agentId)
+        mockMvc.perform(put("/tickets/{id}/agent/{agentId}", ticketId, agentId)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(ErrorMessages.ONLY_NEW_TICKET_CAN_BE_ASSIGNED_TO_AN_AGENT));
@@ -97,7 +97,7 @@ public class TicketControllerTest {
         when(ticketService.assignAgentToTicket(ticketId, agentId))
                 .thenThrow(new AgentNotFoundException(ErrorMessages.AGENT_NOT_FOUND));
 
-        mockMvc.perform(put("/tickets/{id}/assign/{agentId}", ticketId, agentId)
+        mockMvc.perform(put("/tickets/{id}/agent/{agentId}", ticketId, agentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(ErrorMessages.AGENT_NOT_FOUND));
@@ -112,7 +112,7 @@ public class TicketControllerTest {
         when(ticketService.assignAgentToTicket(nonexistentTicketId, agentId))
                 .thenThrow(new TicketNotFoundException(ErrorMessages.TICKET_NOT_FOUND));
 
-        mockMvc.perform(put("/tickets/{id}/assign/{agentId}", nonexistentTicketId, agentId)
+        mockMvc.perform(put("/tickets/{id}/agent/{agentId}", nonexistentTicketId, agentId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(ErrorMessages.TICKET_NOT_FOUND));
