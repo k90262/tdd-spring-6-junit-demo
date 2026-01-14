@@ -83,8 +83,86 @@ class TicketApiApplicationTests {
 
 	@Test
 	void assignAgentToTicket_AlreadyInProgress() {
-		// Given a ticket in "NEW" state
+		// Given a ticket in the "IN_PROGRESS" state
 		webTestClient.put().uri("/tickets/101/agent/1")
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
+
+	@Test
+	void resolveTicket_Sucesssful() {
+		// Given a ticket in the "IN_PROGRESS" state
+		webTestClient.put().uri("/tickets/101/resolve")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(TicketDto.class)
+				.value(ticketDtoResponse -> {
+					assertEquals(Status.RESOLVED, ticketDtoResponse.status());
+				});
+	}
+
+	@Test
+	void resolveTicket_InvalidState() {
+		// Given a ticket in "NEW" state
+		webTestClient.put().uri("/tickets/100/resolve")
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
+
+	@Test
+	void closeTicket_Sucesssful() {
+		// Given a ticket in "RESOLVED" status with a resolution summary
+		webTestClient.put().uri("/tickets/103/close")
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(TicketDto.class)
+				.value(ticketDtoResponse -> {
+					assertEquals(Status.CLOSED, ticketDtoResponse.status());
+				});
+	}
+
+	@Test
+	void closeTicket_MissingResolutionSummary() {
+		// Given a ticket in "RESOLVED" status without a resolution summary
+		webTestClient.put().uri("/tickets/102/close")
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
+
+	@Test
+	void closeTicket_InvalidState() {
+		// Given a ticket in "NEW" status
+		webTestClient.put().uri("/tickets/100/close")
+				.exchange()
+				.expectStatus().isBadRequest();
+	}
+
+	@Test
+	void updateTicket_Sucesssful() {
+		String description = "Updated description";
+		// Given a ticket not closed
+		TicketDto ticketDto = new TicketDto(100L, description, null, null, null, null, null);
+
+		webTestClient.put().uri("/tickets/100")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(ticketDto)
+				.exchange()
+				.expectStatus().isOk()
+				.expectBody(TicketDto.class)
+				.value(ticketDtoResponse -> {
+					assertEquals(description, ticketDtoResponse.description());
+				});
+	}
+
+	@Test
+	void updateTicket_InvalidState() {
+		String description = "Updated description";
+		// Given a closed ticket and try to change its state in a way that's not allowed by business rules
+		TicketDto ticketDto = new TicketDto(100L, description, null, null, null, null, null);
+
+		webTestClient.put().uri("/tickets/104")
+				.contentType(MediaType.APPLICATION_JSON)
+				.bodyValue(ticketDto)
 				.exchange()
 				.expectStatus().isBadRequest();
 	}
